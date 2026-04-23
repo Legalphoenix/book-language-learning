@@ -5,7 +5,6 @@ Interactive bilingual Russian reading page with word translations, sentence audi
 ## Run Locally
 
 ```bash
-export OPENAI_API_KEY="your_api_key"
 npm start
 ```
 
@@ -19,4 +18,10 @@ The voice tutor uses `gpt-realtime-1.5` by default and gets the full sentence li
 
 ```bash
 OPENAI_REALTIME_MODEL=gpt-realtime-1.5 OPENAI_REALTIME_VOICE=marin npm start
+```
+
+Local API keys can live in `.env`, which is ignored by git:
+
+```text
+OPENAI_API_KEY=your_api_key
 ```

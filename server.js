@@ -2,6 +2,29 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 
+function loadLocalEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) {
+    return;
+  }
+
+  const envFile = fs.readFileSync(envPath, 'utf8');
+  envFile.split(/\r?\n/).forEach((line) => {
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)=(.*)\s*$/);
+    if (!match || process.env[match[1]]) {
+      return;
+    }
+
+    let value = match[2].trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    process.env[match[1]] = value;
+  });
+}
+
+loadLocalEnv();
+
 const PORT = Number(process.env.PORT || 8787);
 const ROOT = __dirname;
 const REALTIME_MODEL = process.env.OPENAI_REALTIME_MODEL || 'gpt-realtime-1.5';
