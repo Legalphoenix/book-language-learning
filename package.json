@@ -1,0 +1,12 @@
+{
+  "name": "book-language-learning",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive bilingual reading page with local audio, images, and an OpenAI Realtime voice tutor.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
