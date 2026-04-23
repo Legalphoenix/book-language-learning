@@ -1,0 +1,338 @@
+[
+  {
+    "index": 0,
+    "files": [
+      "sentence-01-alloy.mp3",
+      "sentence-01-ash.mp3",
+      "sentence-01-ballad.mp3",
+      "sentence-01-coral.mp3",
+      "sentence-01-onyx.mp3",
+      "sentence-01-nova.mp3",
+      "sentence-01-shimmer.mp3",
+      "sentence-01-cedar.mp3"
+    ]
+  },
+  {
+    "index": 1,
+    "files": [
+      "sentence-02-ash.mp3",
+      "sentence-02-ballad.mp3",
+      "sentence-02-fable.mp3",
+      "sentence-02-onyx.mp3",
+      "sentence-02-nova.mp3",
+      "sentence-02-cedar.mp3"
+    ]
+  },
+  {
+    "index": 2,
+    "files": [
+      "sentence-03-alloy.mp3",
+      "sentence-03-ash.mp3",
+      "sentence-03-echo.mp3",
+      "sentence-03-fable.mp3",
+      "sentence-03-nova.mp3",
+      "sentence-03-verse.mp3",
+      "sentence-03-marin.mp3",
+      "sentence-03-cedar.mp3"
+    ]
+  },
+  {
+    "index": 3,
+    "files": [
+      "sentence-04-alloy.mp3",
+      "sentence-04-ballad.mp3",
+      "sentence-04-coral.mp3",
+      "sentence-04-fable.mp3",
+      "sentence-04-nova.mp3",
+      "sentence-04-shimmer.mp3"
+    ]
+  },
+  {
+    "index": 4,
+    "files": [
+      "sentence-05-alloy.mp3",
+      "sentence-05-ash.mp3",
+      "sentence-05-ballad.mp3",
+      "sentence-05-coral.mp3",
+      "sentence-05-echo.mp3",
+      "sentence-05-fable.mp3",
+      "sentence-05-onyx.mp3",
+      "sentence-05-nova.mp3",
+      "sentence-05-sage.mp3",
+      "sentence-05-shimmer.mp3",
+      "sentence-05-verse.mp3",
+      "sentence-05-marin.mp3",
+      "sentence-05-cedar.mp3"
+    ]
+  },
+  {
+    "index": 5,
+    "files": [
+      "sentence-06-alloy.mp3",
+      "sentence-06-ash.mp3",
+      "sentence-06-ballad.mp3",
+      "sentence-06-coral.mp3",
+      "sentence-06-echo.mp3",
+      "sentence-06-fable.mp3",
+      "sentence-06-onyx.mp3",
+      "sentence-06-nova.mp3",
+      "sentence-06-sage.mp3",
+      "sentence-06-shimmer.mp3",
+      "sentence-06-verse.mp3",
+      "sentence-06-marin.mp3",
+      "sentence-06-cedar.mp3"
+    ]
+  },
+  {
+    "index": 6,
+    "files": [
+      "sentence-07-alloy.mp3",
+      "sentence-07-ash.mp3",
+      "sentence-07-ballad.mp3",
+      "sentence-07-coral.mp3",
+      "sentence-07-echo.mp3",
+      "sentence-07-fable.mp3",
+      "sentence-07-onyx.mp3",
+      "sentence-07-nova.mp3",
+      "sentence-07-sage.mp3",
+      "sentence-07-shimmer.mp3",
+      "sentence-07-verse.mp3",
+      "sentence-07-marin.mp3",
+      "sentence-07-cedar.mp3"
+    ]
+  },
+  {
+    "index": 7,
+    "files": [
+      "sentence-08-alloy.mp3",
+      "sentence-08-ash.mp3",
+      "sentence-08-ballad.mp3",
+      "sentence-08-coral.mp3",
+      "sentence-08-echo.mp3",
+      "sentence-08-fable.mp3",
+      "sentence-08-onyx.mp3",
+      "sentence-08-nova.mp3",
+      "sentence-08-sage.mp3",
+      "sentence-08-shimmer.mp3",
+      "sentence-08-verse.mp3",
+      "sentence-08-marin.mp3",
+      "sentence-08-cedar.mp3"
+    ]
+  },
+  {
+    "index": 8,
+    "files": [
+      "sentence-09-alloy.mp3",
+      "sentence-09-ash.mp3",
+      "sentence-09-ballad.mp3",
+      "sentence-09-coral.mp3",
+      "sentence-09-echo.mp3",
+      "sentence-09-fable.mp3",
+      "sentence-09-onyx.mp3",
+      "sentence-09-nova.mp3",
+      "sentence-09-sage.mp3",
+      "sentence-09-shimmer.mp3",
+      "sentence-09-verse.mp3",
+      "sentence-09-marin.mp3",
+      "sentence-09-cedar.mp3"
+    ]
+  },
+  {
+    "index": 9,
+    "files": [
+      "sentence-10-alloy.mp3",
+      "sentence-10-ash.mp3",
+      "sentence-10-ballad.mp3",
+      "sentence-10-coral.mp3",
+      "sentence-10-echo.mp3",
+      "sentence-10-fable.mp3",
+      "sentence-10-onyx.mp3",
+      "sentence-10-nova.mp3",
+      "sentence-10-sage.mp3",
+      "sentence-10-shimmer.mp3",
+      "sentence-10-verse.mp3",
+      "sentence-10-marin.mp3",
+      "sentence-10-cedar.mp3"
+    ]
+  },
+  {
+    "index": 10,
+    "files": [
+      "sentence-11-alloy.mp3",
+      "sentence-11-ash.mp3",
+      "sentence-11-ballad.mp3",
+      "sentence-11-coral.mp3",
+      "sentence-11-echo.mp3",
+      "sentence-11-fable.mp3",
+      "sentence-11-onyx.mp3",
+      "sentence-11-nova.mp3",
+      "sentence-11-sage.mp3",
+      "sentence-11-shimmer.mp3",
+      "sentence-11-verse.mp3",
+      "sentence-11-marin.mp3",
+      "sentence-11-cedar.mp3"
+    ]
+  },
+  {
+    "index": 11,
+    "files": [
+      "sentence-12-alloy.mp3",
+      "sentence-12-ash.mp3",
+      "sentence-12-ballad.mp3",
+      "sentence-12-coral.mp3",
+      "sentence-12-echo.mp3",
+      "sentence-12-fable.mp3",
+      "sentence-12-onyx.mp3",
+      "sentence-12-nova.mp3",
+      "sentence-12-sage.mp3",
+      "sentence-12-shimmer.mp3",
+      "sentence-12-verse.mp3",
+      "sentence-12-marin.mp3",
+      "sentence-12-cedar.mp3"
+    ]
+  },
+  {
+    "index": 12,
+    "files": [
+      "sentence-13-alloy.mp3",
+      "sentence-13-ash.mp3",
+      "sentence-13-ballad.mp3",
+      "sentence-13-coral.mp3",
+      "sentence-13-echo.mp3",
+      "sentence-13-fable.mp3",
+      "sentence-13-onyx.mp3",
+      "sentence-13-nova.mp3",
+      "sentence-13-sage.mp3",
+      "sentence-13-shimmer.mp3",
+      "sentence-13-verse.mp3",
+      "sentence-13-marin.mp3",
+      "sentence-13-cedar.mp3"
+    ]
+  },
+  {
+    "index": 13,
+    "files": [
+      "sentence-14-alloy.mp3",
+      "sentence-14-ash.mp3",
+      "sentence-14-ballad.mp3",
+      "sentence-14-coral.mp3",
+      "sentence-14-echo.mp3",
+      "sentence-14-fable.mp3",
+      "sentence-14-onyx.mp3",
+      "sentence-14-nova.mp3",
+      "sentence-14-sage.mp3",
+      "sentence-14-shimmer.mp3",
+      "sentence-14-verse.mp3",
+      "sentence-14-marin.mp3",
+      "sentence-14-cedar.mp3"
+    ]
+  },
+  {
+    "index": 14,
+    "files": [
+      "sentence-15-alloy.mp3",
+      "sentence-15-ash.mp3",
+      "sentence-15-ballad.mp3",
+      "sentence-15-coral.mp3",
+      "sentence-15-echo.mp3",
+      "sentence-15-fable.mp3",
+      "sentence-15-onyx.mp3",
+      "sentence-15-nova.mp3",
+      "sentence-15-sage.mp3",
+      "sentence-15-shimmer.mp3",
+      "sentence-15-verse.mp3",
+      "sentence-15-marin.mp3",
+      "sentence-15-cedar.mp3"
+    ]
+  },
+  {
+    "index": 15,
+    "files": [
+      "sentence-16-alloy.mp3",
+      "sentence-16-ash.mp3",
+      "sentence-16-ballad.mp3",
+      "sentence-16-coral.mp3",
+      "sentence-16-echo.mp3",
+      "sentence-16-fable.mp3",
+      "sentence-16-onyx.mp3",
+      "sentence-16-nova.mp3",
+      "sentence-16-sage.mp3",
+      "sentence-16-shimmer.mp3",
+      "sentence-16-verse.mp3",
+      "sentence-16-marin.mp3",
+      "sentence-16-cedar.mp3"
+    ]
+  },
+  {
+    "index": 16,
+    "files": [
+      "sentence-17-alloy.mp3",
+      "sentence-17-ash.mp3",
+      "sentence-17-ballad.mp3",
+      "sentence-17-coral.mp3",
+      "sentence-17-echo.mp3",
+      "sentence-17-fable.mp3",
+      "sentence-17-onyx.mp3",
+      "sentence-17-nova.mp3",
+      "sentence-17-sage.mp3",
+      "sentence-17-shimmer.mp3",
+      "sentence-17-verse.mp3",
+      "sentence-17-marin.mp3",
+      "sentence-17-cedar.mp3"
+    ]
+  },
+  {
+    "index": 17,
+    "files": [
+      "sentence-18-alloy.mp3",
+      "sentence-18-ash.mp3",
+      "sentence-18-ballad.mp3",
+      "sentence-18-coral.mp3",
+      "sentence-18-echo.mp3",
+      "sentence-18-fable.mp3",
+      "sentence-18-onyx.mp3",
+      "sentence-18-nova.mp3",
+      "sentence-18-sage.mp3",
+      "sentence-18-shimmer.mp3",
+      "sentence-18-verse.mp3",
+      "sentence-18-marin.mp3",
+      "sentence-18-cedar.mp3"
+    ]
+  },
+  {
+    "index": 18,
+    "files": [
+      "sentence-19-alloy.mp3",
+      "sentence-19-ash.mp3",
+      "sentence-19-ballad.mp3",
+      "sentence-19-coral.mp3",
+      "sentence-19-echo.mp3",
+      "sentence-19-fable.mp3",
+      "sentence-19-onyx.mp3",
+      "sentence-19-nova.mp3",
+      "sentence-19-sage.mp3",
+      "sentence-19-shimmer.mp3",
+      "sentence-19-verse.mp3",
+      "sentence-19-marin.mp3",
+      "sentence-19-cedar.mp3"
+    ]
+  },
+  {
+    "index": 19,
+    "files": [
+      "sentence-20-alloy.mp3",
+      "sentence-20-ash.mp3",
+      "sentence-20-ballad.mp3",
+      "sentence-20-coral.mp3",
+      "sentence-20-echo.mp3",
+      "sentence-20-fable.mp3",
+      "sentence-20-onyx.mp3",
+      "sentence-20-nova.mp3",
+      "sentence-20-sage.mp3",
+      "sentence-20-shimmer.mp3",
+      "sentence-20-verse.mp3",
+      "sentence-20-marin.mp3",
+      "sentence-20-cedar.mp3"
+    ]
+  }
+]

@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word-by-word translation</title>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #f2e7d7 0%, #fefcf8 45%, #e6f2ff 100%);
+      --card: #ffffffcc;
+      --text: #1e1a16;
+      --muted: #5a5360;
+      --accent: #1f4e79;
+      --line: #e6dccc;
+      --word-bg: #f9f3e7;
+      --word-hover: #fff2b3;
+      --word-active: #ffe28f;
+      --shadow: 0 14px 40px rgba(28, 30, 37, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Merriweather", "Georgia", "Times New Roman", serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: start;
+      padding: 22px;
+    }
+
+    main {
+      width: min(960px, 100%);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 22px;
+      backdrop-filter: blur(4px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.2rem, 2vw, 1.7rem);
+      color: #12314f;
+      letter-spacing: 0.01em;
+    }
+
+    .hint {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
+
+    .pair {
+      display: grid;
+      gap: 8px;
+      padding: 14px 0 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pair-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .row-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex: 0 0 auto;
+      margin: 4px 0 0;
+    }
+
+    .translation-toggle {
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 1px solid #c8d9ea;
+      background: rgba(255, 255, 255, 0.72);
+      color: transparent;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+      line-height: 0;
+      cursor: pointer;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease,
+        transform 80ms ease,
+        opacity 120ms ease;
+      opacity: 0.55;
+      flex: 0 0 auto;
+      margin: 4px 0 0;
+    }
+
+    .translation-toggle::before {
+      content: '▾';
+      font-size: 13px;
+      line-height: 1;
+      color: #5e7f9f;
+      transform: translateY(-1px) rotate(0deg);
+      transition: transform 140ms ease, color 120ms ease;
+    }
+
+    .translation-toggle:hover,
+    .translation-toggle:focus-visible {
+      opacity: 0.95;
+      border-color: #9ab9d6;
+      background: #f2f7ff;
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .translation-toggle[aria-expanded="true"]::before {
+      transform: translateY(-1px) rotate(180deg);
+      color: #2f577f;
+    }
+
+    .translation-toggle:focus-visible {
+      box-shadow: 0 0 0 2px #bfdbfe66;
+    }
+
+    .translation-toggle:focus-visible::before {
+      color: #2f577f;
+    }
+
+    .translation-toggle[aria-expanded="true"] {
+      opacity: 0.75;
+    }
+
+    .sentence-play {
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border: 1px solid #c8d9ea;
+      background: rgba(255, 255, 255, 0.72);
+      color: transparent;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+      line-height: 0;
+      cursor: pointer;
+      transition:
+        border-color 120ms ease,
+        background-color 120ms ease,
+        transform 80ms ease,
+        opacity 120ms ease,
+        color 120ms ease;
+      opacity: 0.55;
+      flex: 0 0 auto;
+    }
+
+    .sentence-play::before {
+      content: '▶';
+      font-size: 10px;
+      line-height: 1;
+      color: #5e7f9f;
+      display: inline-block;
+      transform: translateX(1px);
+    }
+
+    .sentence-play:hover,
+    .sentence-play:focus-visible {
+      opacity: 0.95;
+      border-color: #9ab9d6;
+      background: #f2f7ff;
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .sentence-play:focus-visible {
+      box-shadow: 0 0 0 2px #bfdbfe66;
+    }
+
+    .sentence-play:disabled {
+      opacity: 0.26;
+      cursor: not-allowed;
+    }
+
+    .sentence-play.loading {
+      opacity: 0.72;
+    }
+
+    .sentence-play.loading::before {
+      content: '◌';
+      transform: rotate(0deg);
+      animation: spin 700ms linear infinite;
+    }
+
+    .sentence-play.is-playing::before {
+      content: '⏸';
+      transform: none;
+      font-size: 9px;
+    }
+
+    @keyframes spin {
+      from { transform: translateX(1px) rotate(0deg); }
+      to { transform: translateX(1px) rotate(360deg); }
+    }
+
+    .pair:last-child { border-bottom: none; }
+
+    .sentence {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.72;
+      font-family: inherit;
+      letter-spacing: 0.01em;
+      text-wrap: pretty;
+      word-wrap: break-word;
+    }
+
+    .pair-header .sentence {
+      min-width: 0;
+      flex: 1;
+      margin: 0;
+    }
+
+    .sentence.en {
+      color: #2a445d;
+      font-size: 1.01rem;
+    }
+
+    .details-panel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .details-panel .sentence.en {
+      margin: 0;
+    }
+
+    .hidden-translation {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(-2px);
+      margin-top: 0;
+      margin-bottom: 0;
+      transition: max-height 180ms ease, opacity 140ms ease, transform 140ms ease;
+      pointer-events: none;
+      white-space: normal;
+    }
+
+    .hidden-translation.open {
+      max-height: 760px;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      margin-top: 2px;
+      margin-bottom: 0;
+    }
+
+    .scene-card {
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid #d7e3ed;
+      background: linear-gradient(180deg, #f7fbff 0%, #edf4fb 100%);
+      box-shadow: 0 14px 26px rgba(25, 45, 67, 0.1);
+    }
+
+    .scene-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    .word {
+      cursor: pointer;
+      border-radius: 7px;
+      padding: 1px 3px;
+      margin: 0 1px;
+      transition: background-color 90ms ease, transform 90ms ease;
+      background: transparent;
+      display: inline-block;
+      position: relative;
+    }
+
+    .word:hover {
+      background: var(--word-hover);
+    }
+
+    .word:focus-visible {
+      outline: 2px solid #8eb2d7;
+      outline-offset: 2px;
+    }
+
+    .word.active {
+      background: var(--word-active);
+      transform: translateY(-1px);
+    }
+
+    #translation-popup {
+      --pad: 10px;
+      position: fixed;
+      z-index: 50;
+      max-width: min(86vw, 320px);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px) scale(0.97);
+      transition: opacity 120ms ease, transform 120ms ease;
+      background: #0f172a;
+      color: #e9edf5;
+      border-radius: 12px;
+      padding: 10px var(--pad);
+      box-shadow: 0 14px 30px rgba(10, 20, 45, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 0.95rem;
+      line-height: 1.35;
+      white-space: normal;
+      visibility: hidden;
+    }
+
+    #translation-popup.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      visibility: visible;
+    }
+
+    #translation-popup .src {
+      font-weight: 700;
+      color: #d5b95d;
+    }
+
+    #translation-popup .arrow {
+      margin: 0 6px;
+      color: #f3a8a8;
+    }
+
+    #translation-popup .note {
+      color: #9fb0c5;
+      margin-left: 2px;
+      display: block;
+      margin-top: 5px;
+      font-size: 0.76rem;
+      line-height: 1.3;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+  <main>
+      <h1>Click any word for translation</h1>
+    <p class="hint">Tap/click a word to see a quick popup. Tap the same word again (or anywhere else) to hide it. Full sentence translations and illustrations stay hidden by default until you open the right arrow. Tap the speaker icon for a random local voice sample of that sentence.</p>
+    <section id="pairs" aria-live="polite"></section>
+  </main>
+
+  <aside id="translation-popup" role="status" aria-live="polite"></aside>
+
+  <script>
+    const sentences = [
+      {
+        ru: "— Даниэль, иди сюда! — зовёт меня Джулия. Она стоит в дверях.",
+        en: "Daniel, come here! Julia calls me. She is standing in the doorway."
+      },
+      {
+        ru: "— Что, Джулия? — отвечаю я.",
+        en: "What is it, Julia? I reply."
+      },
+      {
+        ru: "— Ты не забыл, что сегодня мы летим в Россию?",
+        en: "You didn’t forget that today we’re flying to Russia?"
+      },
+      {
+        ru: "— Конечно, не забыл. Я уже собираюсь.",
+        en: "Of course I didn’t forget. I’m already getting ready."
+      },
+      {
+        ru: "Меня зовут Даниэль.",
+        en: "My name is Daniel."
+      },
+      {
+        ru: "Мне 24 года.",
+        en: "I am 24 years old."
+      },
+      {
+        ru: "Джулия — моя сестра.",
+        en: "Julia is my sister."
+      },
+      {
+        ru: "Мы живём в Лондоне вместе с родителями.",
+        en: "We live in London together with our parents."
+      },
+      {
+        ru: "Ей 23 года.",
+        en: "She is 23 years old."
+      },
+      {
+        ru: "Нашего отца зовут Артур, а мать — Наташа.",
+        en: "Our father’s name is Arthur, and our mother’s name is Natasha."
+      },
+      {
+        ru: "Она родом из Владивостока, а в Англию приехала учиться в институте, когда ей было 22 года.",
+        en: "She is originally from Vladivostok, and she came to England to study at university when she was 22 years old."
+      },
+      {
+        ru: "Там они с папой и познакомились.",
+        en: "That’s where she and my dad met."
+      },
+      {
+        ru: "Сегодня мы с Джулией собираемся в поездку в Россию по программе обмена студентами.",
+        en: "Today Julia and I are going on a trip to Russia as part of a student exchange program."
+      },
+      {
+        ru: "Будет очень интересно, так как я очень мало знаю о российской системе образования.",
+        en: "It will be very interesting, as I know very little about the Russian education system."
+      },
+      {
+        ru: "Я высокий: мой рост 1 метр 87 сантиметров.",
+        en: "I am tall: my height is 1 meter 87 centimeters."
+      },
+      {
+        ru: "У меня достаточно длинные тёмные волосы.",
+        en: "I have fairly long dark hair."
+      },
+      {
+        ru: "У меня зелёные глаза и большой рот.",
+        en: "I have green eyes and a big mouth."
+      },
+      {
+        ru: "Я часто занимаюсь спортом и регулярно бегаю по утрам, поэтому у меня сильные ноги.",
+        en: "I often do sports and regularly run in the mornings, so I have strong legs."
+      },
+      {
+        ru: "У моей сестры Джулии тоже тёмные волосы, но длиннее, чем у меня.",
+        en: "My sister Julia also has dark hair, but longer than mine."
+      },
+      {
+        ru: "Глаза у неё не зелёные, а карие.",
+        en: "Her eyes are not green, but brown."
+      }
+    ];
+
+    const ruToEn = {
+      даниэль: "Daniel",
+      иди: "come",
+      сюда: "here",
+      зовет: "calls",
+      зовёт: "calls",
+      меня: "me",
+      меням: "me",
+      джулия: "Julia",
+      она: "she",
+      стоит: "stands",
+      дверях: "the doorway",
+      что: "what",
+      отвечаю: "answer",
+      я: "I",
+      ты: "you",
+      не: "not",
+      забыл: "forgot",
+      сегодня: "today",
+      мы: "we",
+      летим: "fly",
+      россию: "Russia",
+      конечно: "of course",
+      уже: "already",
+      собираюсь: "am getting ready",
+      зовут: "is called",
+      24: "24",
+      мне: "to me",
+      года: "years",
+      моя: "my",
+      мой: "my",
+      сестра: "sister",
+      живем: "live",
+      живём: "live",
+      лондоне: "London",
+      вместе: "together",
+      родителями: "our parents",
+      ей: "her",
+      23: "23",
+      нашего: "our",
+      отца: "father",
+      а: "and",
+      мать: "mother",
+      артур: "Arthur",
+      наташа: "Natasha",
+      родом: "from",
+      из: "from",
+      владивостока: "Vladivostok",
+      англию: "England",
+      приехала: "came",
+      учиться: "to study",
+      институте: "at university",
+      когда: "when",
+      было: "was",
+      там: "there",
+      они: "they",
+      папой: "dad",
+      познакомились: "met",
+      сегодня: "today",
+      с: "with",
+      джулией: "Julia",
+      собираемся: "are going",
+      поездку: "trip",
+      по: "by/under/about",
+      программе: "program",
+      обмена: "exchange",
+      студентами: "students",
+      будет: "will be",
+      очень: "very",
+      интересно: "interesting",
+      так: "so",
+      я: "I",
+      мало: "little",
+      знаю: "know",
+      о: "about",
+      российской: "Russian",
+      системе: "education system",
+      образования: "education",
+      высокий: "tall",
+      рост: "height",
+      метр: "meter",
+      87: "87",
+      сантиметров: "centimeters",
+      достаточно: "fairly",
+      длинные: "long",
+      тёмные: "dark",
+      волосы: "hair",
+      зелёные: "green",
+      глаза: "eyes",
+      большой: "big",
+      рот: "mouth",
+      часто: "often",
+      занимаюсь: "do",
+      спортом: "sports",
+      регулярно: "regularly",
+      бегаю: "run",
+      по: "in",
+      утрам: "the mornings",
+      поэтому: "therefore",
+      сильные: "strong",
+      ноги: "legs",
+      моей: "my",
+      тожа: "also",
+      тоже: "also",
+      длиннее: "longer",
+      чем: "than",
+      карие: "brown"
+    };
+
+    const enToRu = {
+      daniel: "Даниэль",
+      come: "иди",
+      here: "сюда",
+      calls: "зовёт",
+      me: "меня",
+      shes: "она",
+      she: "она",
+      is: "есть/является",
+      standing: "стоит",
+      in: "в",
+      the: "the",
+      doorway: "двери",
+      what: "что",
+      is: "есть",
+      it: "это",
+      reply: "отвечаю",
+      i: "я",
+      didnt: "не",
+      forgot: "забыл",
+      today: "сегодня",
+      we: "мы",
+      were: "мы",
+      flying: "летим",
+      to: "в",
+      russia: "Россию",
+      of: "из/о",
+      course: "конечно",
+      am: "я",
+      already: "уже",
+      getting: "собираюсь",
+      ready: "готов",
+      name: "имя",
+      my: "мой",
+      nameis: "звук",
+      years: "лет",
+      old: "лет",
+      live: "живём",
+      london: "Лондон",
+      together: "вместе",
+      parents: "родители",
+      father: "отец",
+      mother: "мать",
+      fathers: "отца",
+      "mother’s": "матери",
+      mothers: "мать",
+      originally: "родом",
+      from: "из",
+      she: "она",
+      and: "и",
+      came: "приехала",
+      to: "в",
+      study: "учиться",
+      at: "в",
+      university: "институте",
+      when: "когда",
+      was: "была",
+      her: "её",
+      thats: "это",
+      where: "где",
+      dad: "папа",
+      met: "познакомились",
+      today: "сегодня",
+      are: "есть",
+      trip: "поездку",
+      going: "собираемся",
+      as: "как",
+      part: "часть",
+      exchange: "обмена",
+      program: "программе",
+      it: "это",
+      will: "будет",
+      very: "очень",
+      interesting: "интересно",
+      as: "так как",
+      know: "знаю",
+      little: "мало",
+      about: "о",
+      Russian: "русская",
+      education: "образование",
+      system: "система",
+      tall: "высокий",
+      height: "рост",
+      meter: "метр",
+      centimeters: "сантиметры",
+      fairly: "довольно",
+      long: "длинный",
+      dark: "тёмный",
+      hair: "волосы",
+      green: "зелёный",
+      eyes: "глаза",
+      and: "и",
+      big: "большой",
+      mouth: "рот",
+      often: "часто",
+      do: "занимаюсь",
+      sports: "спортом",
+      regularly: "регулярно",
+      run: "бегаю",
+      mornings: "утрам",
+      so: "поэтому",
+      have: "у меня/имею",
+      strong: "сильный",
+      legs: "ноги",
+      sister: "сестра",
+      also: "тоже",
+      longer: "длиннее",
+      than: "чем",
+      brown: "карий"
+    };
+
+    const sentenceSceneAltText = [
+      'Daniel walking toward Julia while she stands in a doorway and calls to him.',
+      'Daniel and Julia facing each other as he replies to her.',
+      'A plane, suitcase, and travel items showing the trip to Russia.',
+      'Daniel getting ready with an open suitcase and packed clothes.',
+      'A portrait of Daniel introducing himself.',
+      'A portrait card of Daniel with the number 24.',
+      'Daniel and Julia standing together as siblings.',
+      'A family of four in front of a London home and skyline.',
+      'A portrait card of Julia with the number 23.',
+      'Arthur and Natasha standing together as the parents.',
+      'A travel route from Vladivostok to England with a university building.',
+      'Two people meeting under an academic archway.',
+      'A student exchange trip scene with boarding cards and a plane.',
+      'Books and study materials representing the Russian education system.',
+      'Daniel standing next to a height ruler marked 1.87 meters.',
+      'A portrait focusing on long dark hair.',
+      'A face close-up with green eyes and a broad smile.',
+      'Daniel running on a track with strong athletic posture.',
+      'Daniel and Julia side by side comparing hair length.',
+      'A close-up of brown eyes.'
+    ];
+
+    const fullLocalVoiceSet = [
+      'alloy',
+      'ash',
+      'ballad',
+      'coral',
+      'echo',
+      'fable',
+      'onyx',
+      'nova',
+      'sage',
+      'shimmer',
+      'verse',
+      'marin',
+      'cedar'
+    ];
+    const localSentenceAudioVoices = [
+      ['alloy', 'ash', 'ballad', 'coral', 'onyx', 'nova', 'shimmer', 'cedar'],
+      ['ash', 'ballad', 'fable', 'onyx', 'nova', 'cedar'],
+      ['alloy', 'ash', 'echo', 'fable', 'nova', 'verse', 'marin', 'cedar'],
+      ['alloy', 'ballad', 'coral', 'fable', 'nova', 'shimmer'],
+      ...Array.from({ length: 16 }, () => fullLocalVoiceSet)
+    ];
+    const localAudioBasePath = 'word-translation-audio';
+
+    const pairsRoot = document.getElementById('pairs');
+    const popup = document.getElementById('translation-popup');
+    const sentenceAudio = new Audio();
+    let activeWord = null;
+    let activeAudioButton = null;
+    const sentenceSceneImages = Array.from(
+      { length: sentenceSceneAltText.length },
+      (_, index) => `word-translation-images/sentence-${String(index + 1).padStart(2, '0')}.png`
+    );
+
+    function encodeSvg(svg) {
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }
+
+    function escapeXml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+
+    function sceneFrame({ title, top, bottom, floor, accent, shapes }) {
+      return encodeSvg(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+          <title>${escapeXml(title)}</title>
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${top}" />
+              <stop offset="100%" stop-color="${bottom}" />
+            </linearGradient>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#15273b" flood-opacity="0.14" />
+            </filter>
+          </defs>
+          <rect width="640" height="360" rx="28" fill="url(#sky)" />
+          <circle cx="90" cy="72" r="54" fill="#ffffff" opacity="0.16" />
+          <circle cx="544" cy="58" r="38" fill="${accent}" opacity="0.2" />
+          <rect y="252" width="640" height="108" fill="${floor}" />
+          ${shapes}
+        </svg>
+      `);
+    }
+
+    function person({ x, y, scale = 1, skin = '#f0c7a4', hair = '#2d241f', shirt = '#4b78a6', pants = '#32475f' }) {
+      const head = 18 * scale;
+      const arm = 12 * scale;
+      return `
+        <g filter="url(#shadow)">
+          <circle cx="${x}" cy="${y}" r="${head}" fill="${skin}" />
+          <path d="M ${x - head} ${y - 7 * scale} q ${head} -${17 * scale} ${head * 2} 0 v ${11 * scale} h -${head * 2} z" fill="${hair}" />
+          <rect x="${x - 22 * scale}" y="${y + 25 * scale}" width="${44 * scale}" height="${64 * scale}" rx="${18 * scale}" fill="${shirt}" />
+          <rect x="${x - 18 * scale}" y="${y + 88 * scale}" width="${14 * scale}" height="${50 * scale}" rx="${7 * scale}" fill="${pants}" />
+          <rect x="${x + 4 * scale}" y="${y + 88 * scale}" width="${14 * scale}" height="${50 * scale}" rx="${7 * scale}" fill="${pants}" />
+          <rect x="${x - 34 * scale}" y="${y + 34 * scale}" width="${arm}" height="${46 * scale}" rx="${6 * scale}" fill="${shirt}" />
+          <rect x="${x + 22 * scale}" y="${y + 34 * scale}" width="${arm}" height="${46 * scale}" rx="${6 * scale}" fill="${shirt}" />
+          <circle cx="${x - 6 * scale}" cy="${y - 2 * scale}" r="${2.3 * scale}" fill="#2d241f" />
+          <circle cx="${x + 6 * scale}" cy="${y - 2 * scale}" r="${2.3 * scale}" fill="#2d241f" />
+          <path d="M ${x - 7 * scale} ${y + 9 * scale} q ${7 * scale} ${6 * scale} ${14 * scale} 0" stroke="#8c5647" stroke-width="${2.5 * scale}" fill="none" stroke-linecap="round" />
+        </g>
+      `;
+    }
+
+    function doorway(x, y, width, height) {
+      return `
+        <g filter="url(#shadow)">
+          <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="18" fill="#936d4d" />
+          <rect x="${x + 16}" y="${y + 18}" width="${width - 32}" height="${height - 18}" rx="14" fill="#2c3e52" />
+          <circle cx="${x + width - 28}" cy="${y + height / 2}" r="5" fill="#d8c59a" />
+        </g>
+      `;
+    }
+
+    function bubble(x, y, width, height) {
+      return `
+        <g filter="url(#shadow)">
+          <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="20" fill="#fffdf8" />
+          <path d="M ${x + 28} ${y + height - 4} l 18 18 l 6 -18" fill="#fffdf8" />
+          <circle cx="${x + width / 2 - 18}" cy="${y + height / 2}" r="5" fill="#7b97b6" />
+          <circle cx="${x + width / 2}" cy="${y + height / 2}" r="5" fill="#7b97b6" />
+          <circle cx="${x + width / 2 + 18}" cy="${y + height / 2}" r="5" fill="#7b97b6" />
+        </g>
+      `;
+    }
+
+    function suitcase(x, y, scale = 1, color = '#c06d4d') {
+      return `
+        <g filter="url(#shadow)">
+          <rect x="${x}" y="${y}" width="${70 * scale}" height="${48 * scale}" rx="${12 * scale}" fill="${color}" />
+          <rect x="${x + 22 * scale}" y="${y - 12 * scale}" width="${26 * scale}" height="${12 * scale}" rx="${6 * scale}" fill="none" stroke="#5b3d31" stroke-width="${5 * scale}" />
+          <rect x="${x + 12 * scale}" y="${y + 10 * scale}" width="${46 * scale}" height="${6 * scale}" rx="${3 * scale}" fill="#f2d6b8" opacity="0.55" />
+        </g>
+      `;
+    }
+
+    function plane(x, y, scale = 1, color = '#fffdf9') {
+      return `
+        <g transform="translate(${x} ${y}) scale(${scale})" filter="url(#shadow)">
+          <path d="M 0 0 L 78 -10 L 116 -36 L 134 -30 L 98 -2 L 134 14 L 122 24 L 86 12 L 62 24 L 64 42 L 48 48 L 38 16 L 0 22 Z" fill="${color}" />
+        </g>
+      `;
+    }
+
+    function badge(x, y, text, fill) {
+      return `
+        <g filter="url(#shadow)">
+          <circle cx="${x}" cy="${y}" r="32" fill="${fill}" />
+          <text x="${x}" y="${y + 11}" text-anchor="middle" font-family="Merriweather, Georgia, serif" font-size="26" font-weight="700" fill="#fffdf9">${escapeXml(text)}</text>
+        </g>
+      `;
+    }
+
+    function house(x, y, scale = 1) {
+      return `
+        <g filter="url(#shadow)">
+          <rect x="${x}" y="${y}" width="${112 * scale}" height="${84 * scale}" rx="${10 * scale}" fill="#f6f3ed" />
+          <path d="M ${x - 10 * scale} ${y + 18 * scale} L ${x + 56 * scale} ${y - 34 * scale} L ${x + 122 * scale} ${y + 18 * scale}" fill="#d66e52" />
+          <rect x="${x + 18 * scale}" y="${y + 26 * scale}" width="${26 * scale}" height="${24 * scale}" rx="${4 * scale}" fill="#9ed0ff" />
+          <rect x="${x + 68 * scale}" y="${y + 26 * scale}" width="${26 * scale}" height="${24 * scale}" rx="${4 * scale}" fill="#9ed0ff" />
+          <rect x="${x + 44 * scale}" y="${y + 44 * scale}" width="${24 * scale}" height="${40 * scale}" rx="${5 * scale}" fill="#6d5846" />
+        </g>
+      `;
+    }
+
+    function books(x, y, scale = 1) {
+      return `
+        <g filter="url(#shadow)">
+          <rect x="${x}" y="${y}" width="${122 * scale}" height="${20 * scale}" rx="${8 * scale}" fill="#d66d52" />
+          <rect x="${x + 10 * scale}" y="${y - 24 * scale}" width="${126 * scale}" height="${20 * scale}" rx="${8 * scale}" fill="#466e9e" />
+          <rect x="${x - 4 * scale}" y="${y - 48 * scale}" width="${118 * scale}" height="${20 * scale}" rx="${8 * scale}" fill="#7a9750" />
+          <rect x="${x + 58 * scale}" y="${y - 88 * scale}" width="${86 * scale}" height="${34 * scale}" rx="${10 * scale}" fill="#fff7ee" />
+          <line x1="${x + 76 * scale}" y1="${y - 72 * scale}" x2="${x + 126 * scale}" y2="${y - 72 * scale}" stroke="#9aaac0" stroke-width="${4 * scale}" stroke-linecap="round" />
+          <line x1="${x + 76 * scale}" y1="${y - 62 * scale}" x2="${x + 118 * scale}" y2="${y - 62 * scale}" stroke="#9aaac0" stroke-width="${4 * scale}" stroke-linecap="round" />
+        </g>
+      `;
+    }
+
+    function eye(x, y, scale = 1, iris = '#5c7d45') {
+      return `
+        <g filter="url(#shadow)">
+          <path d="M ${x - 48 * scale} ${y} q ${48 * scale} -${28 * scale} ${96 * scale} 0 q -${48 * scale} ${28 * scale} -${96 * scale} 0" fill="#fffdfa" />
+          <circle cx="${x}" cy="${y}" r="${18 * scale}" fill="${iris}" />
+          <circle cx="${x}" cy="${y}" r="${8 * scale}" fill="#231d1a" />
+          <circle cx="${x + 6 * scale}" cy="${y - 6 * scale}" r="${3.5 * scale}" fill="#fffdfa" />
+        </g>
+      `;
+    }
+
+    function createSceneImage(index, alt) {
+      switch (index) {
+        case 0:
+          return sceneFrame({
+            title: alt,
+            top: '#ffe6d5',
+            bottom: '#dbe9ff',
+            floor: '#e8d8c6',
+            accent: '#ffb98c',
+            shapes: `
+              ${doorway(410, 58, 146, 194)}
+              ${person({ x: 470, y: 132, scale: 1.12, shirt: '#c47aa3', pants: '#664765' })}
+              ${person({ x: 194, y: 138, scale: 1.1, shirt: '#466e97', pants: '#324b5c' })}
+              ${bubble(126, 42, 132, 50)}
+              <path d="M 286 182 Q 346 182 414 158" stroke="#d97657" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.7" />
+            `
+          });
+        case 1:
+          return sceneFrame({
+            title: alt,
+            top: '#f7e8dd',
+            bottom: '#e5eefc',
+            floor: '#eadbcb',
+            accent: '#f2b08e',
+            shapes: `
+              ${bubble(248, 34, 144, 56)}
+              ${person({ x: 218, y: 154, scale: 1.16, shirt: '#476b91' })}
+              ${person({ x: 424, y: 148, scale: 1.08, shirt: '#be799f', pants: '#67435e' })}
+            `
+          });
+        case 2:
+          return sceneFrame({
+            title: alt,
+            top: '#d9ecff',
+            bottom: '#fff0d9',
+            floor: '#e4d3be',
+            accent: '#7db4ff',
+            shapes: `
+              ${plane(188, 124, 1.5, '#fffdf8')}
+              ${suitcase(362, 240, 1.1, '#cc7a56')}
+              ${suitcase(452, 226, 0.92, '#4c6f98')}
+              <rect x="112" y="208" width="112" height="72" rx="14" fill="#fff8ef" filter="url(#shadow)" />
+              <rect x="128" y="224" width="80" height="10" rx="5" fill="#8bb0da" />
+              <rect x="128" y="242" width="54" height="8" rx="4" fill="#d98d6b" />
+            `
+          });
+        case 3:
+          return sceneFrame({
+            title: alt,
+            top: '#f7e5dc',
+            bottom: '#f0f6ff',
+            floor: '#e6d6c3',
+            accent: '#f2b29c',
+            shapes: `
+              <rect x="120" y="214" width="232" height="32" rx="16" fill="#c7996b" filter="url(#shadow)" />
+              <rect x="204" y="160" width="120" height="84" rx="18" fill="#b96f53" filter="url(#shadow)" />
+              <rect x="214" y="170" width="100" height="30" rx="14" fill="#f4d3be" opacity="0.75" />
+              <path d="M 204 160 L 164 126 L 284 114 L 324 160" fill="#de8c6f" filter="url(#shadow)" />
+              ${person({ x: 430, y: 136, scale: 1.08, shirt: '#4f739b' })}
+            `
+          });
+        case 4:
+          return sceneFrame({
+            title: alt,
+            top: '#dfeeff',
+            bottom: '#fff1df',
+            floor: '#ecd8c2',
+            accent: '#98c3ff',
+            shapes: `
+              ${badge(504, 92, 'D', '#4a6f97')}
+              ${person({ x: 320, y: 132, scale: 1.44, shirt: '#4a6f97', pants: '#33485f' })}
+            `
+          });
+        case 5:
+          return sceneFrame({
+            title: alt,
+            top: '#e4efff',
+            bottom: '#fff0dd',
+            floor: '#ecd8c2',
+            accent: '#ffcb86',
+            shapes: `
+              ${person({ x: 274, y: 138, scale: 1.38, shirt: '#4a7198', pants: '#324b60' })}
+              ${badge(470, 110, '24', '#c97a55')}
+            `
+          });
+        case 6:
+          return sceneFrame({
+            title: alt,
+            top: '#fde7df',
+            bottom: '#e5efff',
+            floor: '#ead7c7',
+            accent: '#f4b7a1',
+            shapes: `
+              ${person({ x: 230, y: 142, scale: 1.14, shirt: '#496f98' })}
+              ${person({ x: 400, y: 138, scale: 1.12, shirt: '#c17aa0', pants: '#664566' })}
+              <path d="M 272 174 C 304 156 334 156 366 174" stroke="#d17f64" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.7" />
+            `
+          });
+        case 7:
+          return sceneFrame({
+            title: alt,
+            top: '#dcecff',
+            bottom: '#fff1dd',
+            floor: '#d8c7b5',
+            accent: '#91bbff',
+            shapes: `
+              <rect x="420" y="92" width="26" height="122" rx="4" fill="#8aa0bf" opacity="0.75" />
+              <rect x="456" y="78" width="34" height="136" rx="4" fill="#728cad" opacity="0.8" />
+              <rect x="500" y="110" width="24" height="104" rx="4" fill="#96a8bf" opacity="0.72" />
+              ${house(102, 136, 1.5)}
+              ${person({ x: 208, y: 182, scale: 0.78, shirt: '#a46a87', pants: '#5a4b60' })}
+              ${person({ x: 270, y: 180, scale: 0.82, shirt: '#7f8d54', pants: '#4d5a3b' })}
+              ${person({ x: 332, y: 184, scale: 0.72, shirt: '#496f98', pants: '#33485f' })}
+              ${person({ x: 388, y: 184, scale: 0.7, shirt: '#c47aa3', pants: '#664566' })}
+            `
+          });
+        case 8:
+          return sceneFrame({
+            title: alt,
+            top: '#ffe8de',
+            bottom: '#e4edff',
+            floor: '#ead7c6',
+            accent: '#f7c29d',
+            shapes: `
+              ${person({ x: 274, y: 138, scale: 1.36, shirt: '#c37ba1', pants: '#654364' })}
+              ${badge(468, 110, '23', '#4d7097')}
+            `
+          });
+        case 9:
+          return sceneFrame({
+            title: alt,
+            top: '#efe4dc',
+            bottom: '#e2efff',
+            floor: '#e5d3c2',
+            accent: '#d7ba93',
+            shapes: `
+              ${person({ x: 242, y: 138, scale: 1.24, shirt: '#61754d', pants: '#4e5d40', hair: '#5a4635' })}
+              ${person({ x: 406, y: 138, scale: 1.2, shirt: '#a87398', pants: '#684969', hair: '#372821' })}
+              <rect x="222" y="212" width="208" height="40" rx="20" fill="#fff7ee" opacity="0.84" filter="url(#shadow)" />
+            `
+          });
+        case 10:
+          return sceneFrame({
+            title: alt,
+            top: '#dbe8ff',
+            bottom: '#fff0df',
+            floor: '#e6d5c1',
+            accent: '#8fb8ff',
+            shapes: `
+              <path d="M 114 170 C 210 84 356 80 522 132" stroke="#d67657" stroke-width="5" stroke-dasharray="10 10" fill="none" stroke-linecap="round" />
+              ${plane(286, 106, 0.86, '#fffdf8')}
+              <circle cx="120" cy="174" r="14" fill="#476f98" filter="url(#shadow)" />
+              <circle cx="520" cy="132" r="14" fill="#c37b57" filter="url(#shadow)" />
+              <rect x="390" y="164" width="132" height="86" rx="12" fill="#f7f4ee" filter="url(#shadow)" />
+              <rect x="404" y="144" width="18" height="24" fill="#6988ad" />
+              <rect x="438" y="144" width="18" height="24" fill="#6988ad" />
+              <rect x="472" y="144" width="18" height="24" fill="#6988ad" />
+              <rect x="428" y="198" width="56" height="52" rx="8" fill="#7d6551" />
+            `
+          });
+        case 11:
+          return sceneFrame({
+            title: alt,
+            top: '#f2e4da',
+            bottom: '#e2eeff',
+            floor: '#e7d6c3',
+            accent: '#f2b497',
+            shapes: `
+              <rect x="210" y="70" width="220" height="24" rx="12" fill="#cda886" filter="url(#shadow)" />
+              <rect x="228" y="70" width="26" height="150" rx="13" fill="#d5b28f" />
+              <rect x="386" y="70" width="26" height="150" rx="13" fill="#d5b28f" />
+              ${person({ x: 280, y: 144, scale: 1.0, shirt: '#a97497', pants: '#664467' })}
+              ${person({ x: 356, y: 144, scale: 1.0, shirt: '#4b7098', pants: '#33495f' })}
+              <path d="M 304 176 Q 320 166 336 176" stroke="#d97d62" stroke-width="5" fill="none" stroke-linecap="round" />
+            `
+          });
+        case 12:
+          return sceneFrame({
+            title: alt,
+            top: '#dfeeff',
+            bottom: '#fff0dd',
+            floor: '#e5d5c2',
+            accent: '#9abfff',
+            shapes: `
+              ${plane(364, 90, 1.18, '#fffdf8')}
+              <rect x="106" y="150" width="130" height="82" rx="18" fill="#fff8ef" filter="url(#shadow)" />
+              <rect x="136" y="166" width="70" height="12" rx="6" fill="#d57a58" />
+              <rect x="136" y="186" width="48" height="8" rx="4" fill="#9db5d6" />
+              <rect x="258" y="178" width="140" height="58" rx="18" fill="#466f97" filter="url(#shadow)" />
+              <circle cx="292" cy="207" r="12" fill="#fff5eb" />
+              <circle cx="330" cy="207" r="12" fill="#fff5eb" />
+              <circle cx="368" cy="207" r="12" fill="#fff5eb" />
+            `
+          });
+        case 13:
+          return sceneFrame({
+            title: alt,
+            top: '#e3efff',
+            bottom: '#fff0de',
+            floor: '#ead8c4',
+            accent: '#9fc5ff',
+            shapes: `
+              ${books(126, 268, 1.2)}
+              ${badge(462, 126, '?', '#4b7097')}
+              ${badge(534, 186, '!', '#cf7b55')}
+            `
+          });
+        case 14:
+          return sceneFrame({
+            title: alt,
+            top: '#dbeaff',
+            bottom: '#fff0dd',
+            floor: '#e8d6c1',
+            accent: '#9ec4ff',
+            shapes: `
+              ${person({ x: 246, y: 108, scale: 1.5, shirt: '#4a7097', pants: '#32485f' })}
+              <rect x="430" y="58" width="18" height="220" rx="9" fill="#fff8ef" filter="url(#shadow)" />
+              <line x1="439" y1="70" x2="470" y2="70" stroke="#7f93ab" stroke-width="4" />
+              <line x1="439" y1="112" x2="462" y2="112" stroke="#7f93ab" stroke-width="4" />
+              <line x1="439" y1="154" x2="470" y2="154" stroke="#7f93ab" stroke-width="4" />
+              <line x1="439" y1="196" x2="462" y2="196" stroke="#7f93ab" stroke-width="4" />
+              <line x1="439" y1="238" x2="470" y2="238" stroke="#7f93ab" stroke-width="4" />
+              <text x="502" y="166" font-family="Merriweather, Georgia, serif" font-size="28" font-weight="700" fill="#466f97">1.87m</text>
+            `
+          });
+        case 15:
+          return sceneFrame({
+            title: alt,
+            top: '#efe4dc',
+            bottom: '#dfeeff',
+            floor: '#e7d6c2',
+            accent: '#f1bf98',
+            shapes: `
+              <g filter="url(#shadow)">
+                <circle cx="320" cy="158" r="94" fill="#2b231f" />
+                <circle cx="320" cy="146" r="68" fill="#f0c8a5" />
+                <path d="M 252 136 q 68 -84 136 0 v 74 q -18 54 -68 54 q -50 0 -68 -54 z" fill="#2b231f" />
+                <circle cx="296" cy="140" r="5" fill="#2b231f" />
+                <circle cx="344" cy="140" r="5" fill="#2b231f" />
+                <path d="M 294 176 q 26 18 52 0" stroke="#915c4c" stroke-width="5" fill="none" stroke-linecap="round" />
+              </g>
+            `
+          });
+        case 16:
+          return sceneFrame({
+            title: alt,
+            top: '#e1eeff',
+            bottom: '#fff0de',
+            floor: '#ead7c4',
+            accent: '#b9d591',
+            shapes: `
+              <g filter="url(#shadow)">
+                <ellipse cx="320" cy="160" rx="118" ry="96" fill="#f0c8a5" />
+                ${eye(272, 150, 0.82, '#6b9350')}
+                ${eye(368, 150, 0.82, '#6b9350')}
+                <path d="M 270 114 q 30 -24 60 -6" stroke="#2b231f" stroke-width="8" fill="none" stroke-linecap="round" />
+                <path d="M 352 108 q 32 -18 62 6" stroke="#2b231f" stroke-width="8" fill="none" stroke-linecap="round" />
+                <path d="M 268 222 q 52 36 104 0" stroke="#c36a56" stroke-width="10" fill="none" stroke-linecap="round" />
+              </g>
+            `
+          });
+        case 17:
+          return sceneFrame({
+            title: alt,
+            top: '#dcecff',
+            bottom: '#fff0de',
+            floor: '#d4c3b3',
+            accent: '#9fc2ff',
+            shapes: `
+              <path d="M 0 274 C 148 234 292 234 640 318 L 640 360 L 0 360 Z" fill="#b96452" />
+              <path d="M 0 294 C 150 256 292 256 640 336" stroke="#fff4e9" stroke-width="8" fill="none" opacity="0.55" />
+              <g filter="url(#shadow)" transform="translate(260 112) rotate(-10)">
+                <circle cx="26" cy="0" r="18" fill="#f0c8a5" />
+                <path d="M 14 -12 q 14 -20 28 0 v 12 h -28 z" fill="#2d241f" />
+                <path d="M 24 24 q 36 0 54 24" stroke="#466f97" stroke-width="18" fill="none" stroke-linecap="round" />
+                <path d="M 50 44 l 46 -10" stroke="#466f97" stroke-width="14" stroke-linecap="round" />
+                <path d="M 46 52 l -24 54" stroke="#32485f" stroke-width="16" stroke-linecap="round" />
+                <path d="M 74 50 l 54 30" stroke="#32485f" stroke-width="16" stroke-linecap="round" />
+              </g>
+            `
+          });
+        case 18:
+          return sceneFrame({
+            title: alt,
+            top: '#f5e6dc',
+            bottom: '#e2edff',
+            floor: '#ead7c5',
+            accent: '#f3bf99',
+            shapes: `
+              <g filter="url(#shadow)">
+                <circle cx="228" cy="154" r="64" fill="#2a241f" />
+                <circle cx="228" cy="150" r="48" fill="#f0c8a5" />
+                <path d="M 180 146 q 48 -56 96 0 v 34 q -18 26 -48 26 q -30 0 -48 -26 z" fill="#2a241f" />
+              </g>
+              <g filter="url(#shadow)">
+                <circle cx="418" cy="154" r="74" fill="#2b231f" />
+                <circle cx="418" cy="146" r="48" fill="#f0c8a5" />
+                <path d="M 370 134 q 48 -72 96 0 v 82 q -18 38 -48 38 q -30 0 -48 -38 z" fill="#2b231f" />
+              </g>
+            `
+          });
+        case 19:
+        default:
+          return sceneFrame({
+            title: alt,
+            top: '#e5efff',
+            bottom: '#fff0dd',
+            floor: '#ead7c4',
+            accent: '#d2a26b',
+            shapes: `
+              ${eye(232, 160, 1.08, '#8c6337')}
+              ${eye(408, 160, 1.08, '#8c6337')}
+              <path d="M 162 118 q 70 -44 140 -8" stroke="#4a3b31" stroke-width="10" fill="none" stroke-linecap="round" />
+              <path d="M 338 110 q 72 -34 140 8" stroke="#4a3b31" stroke-width="10" fill="none" stroke-linecap="round" />
+            `
+          });
+      }
+    }
+
+    function tokenize(text) {
+      return text.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*|[^\s\p{L}\p{N}]+|\s+/gu) || [];
+    }
+
+    function isWordToken(token) {
+      return /[\p{L}\p{N}]/u.test(token);
+    }
+
+    function normalizeWord(token) {
+      return token
+        .normalize('NFKC')
+        .toLowerCase()
+        .replace(/[\u2019']/g, '')
+        .replace(/^\p{P}+|\p{P}+$|^\p{S}+|\p{S}+$/gu, '')
+        .replace(/ё/g, 'е')
+        .replace(/…/g, '')
+        .trim();
+    }
+
+    function getWordTranslation(raw, lang) {
+      const norm = normalizeWord(raw);
+      if (!norm) return '';
+      if (lang === 'ru') {
+        return ruToEn[norm] || '';
+      }
+      return enToRu[norm] || '';
+    }
+
+    function makeAudioButtonReady(pairIndex, ready = false) {
+      const pair = sentences[pairIndex];
+      const button = pair?.playButton;
+      if (!button) {
+        return;
+      }
+      button.disabled = !ready;
+      button.dataset.ready = ready ? 'true' : 'false';
+      button.setAttribute(
+        'aria-label',
+        ready
+          ? `Play sentence ${pairIndex + 1} audio with random voice`
+          : 'No sentence audio available'
+      );
+    }
+
+    function buildLocalAudioFiles(pairIndex, voices) {
+      const sentenceId = String(pairIndex + 1).padStart(2, '0');
+      return voices.map((voice) => `${localAudioBasePath}/sentence-${sentenceId}-${voice}.mp3`);
+    }
+
+    function loadLocalSentenceAudioFiles() {
+      localSentenceAudioVoices.forEach((voices, pairIndex) => {
+        const files = Array.isArray(voices) ? buildLocalAudioFiles(pairIndex, voices) : [];
+        sentences[pairIndex].audioFiles = files;
+        makeAudioButtonReady(pairIndex, files.length > 0);
+      });
+    }
+
+    function stopSentenceAudio() {
+      sentenceAudio.pause();
+      sentenceAudio.removeAttribute('src');
+      if (activeAudioButton) {
+        activeAudioButton.classList.remove('is-playing');
+        activeAudioButton.classList.remove('loading');
+        activeAudioButton.disabled = false;
+        activeAudioButton.setAttribute('aria-pressed', 'false');
+        activeAudioButton.setAttribute(
+          'aria-label',
+          `Play sentence ${activeAudioButton.dataset.pair ? Number(activeAudioButton.dataset.pair) + 1 : ''} audio with random voice`
+        );
+      }
+      activeAudioButton = null;
+    }
+
+    async function playSentenceAudio(pairIndex, button) {
+      const files = sentences[pairIndex]?.audioFiles;
+      if (!Array.isArray(files) || !files.length) {
+        return;
+      }
+
+      if (activeAudioButton === button && !sentenceAudio.paused) {
+        stopSentenceAudio();
+        return;
+      }
+
+      stopSentenceAudio();
+      const audioUrl = files[Math.floor(Math.random() * files.length)];
+
+      button.disabled = true;
+      button.classList.add('loading');
+      button.classList.remove('is-playing');
+      button.setAttribute('aria-label', `Loading sentence ${pairIndex + 1} audio`);
+
+      try {
+        sentenceAudio.src = encodeURI(audioUrl);
+        activeAudioButton = button;
+
+        button.classList.remove('loading');
+        button.classList.add('is-playing');
+        button.setAttribute('aria-pressed', 'true');
+        button.setAttribute('aria-label', `Stop sentence ${pairIndex + 1} audio`);
+        await sentenceAudio.play();
+        button.disabled = false;
+
+        sentenceAudio.onended = () => {
+          if (activeAudioButton === button) {
+            stopSentenceAudio();
+          }
+        };
+      } catch {
+        button.classList.remove('loading');
+        button.disabled = false;
+      }
+    }
+
+    function makeSentence(text, lang, row) {
+      const p = document.createElement('p');
+      p.className = `sentence ${lang}`;
+      tokenize(text).forEach(token => {
+        if (!isWordToken(token)) {
+          p.appendChild(document.createTextNode(token));
+          return;
+        }
+
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = token;
+        span.tabIndex = 0;
+        span.dataset.lang = lang;
+        span.dataset.row = row;
+
+        const direct = getWordTranslation(token, lang);
+        span.dataset.translation = direct || '';
+        p.appendChild(span);
+      });
+      return p;
+    }
+
+    function makeTranslationPanel(pairIndex, translationText) {
+      const panel = document.createElement('div');
+      panel.className = 'details-panel hidden-translation';
+      const translation = makeSentence(translationText, 'en', pairIndex);
+      const sceneCard = document.createElement('div');
+      const sceneImage = document.createElement('img');
+      sceneCard.className = 'scene-card';
+      sceneImage.src = sentenceSceneImages[pairIndex];
+      sceneImage.alt = sentenceSceneAltText[pairIndex] || `Illustration for sentence ${pairIndex + 1}`;
+      sceneImage.loading = 'lazy';
+      sceneImage.decoding = 'async';
+      sceneCard.appendChild(sceneImage);
+      panel.appendChild(translation);
+      panel.appendChild(sceneCard);
+      panel.classList.add('hidden-translation');
+      panel.id = `sentence-translation-${pairIndex}`;
+      return panel;
+    }
+
+    function makePlayButton(pairIndex) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sentence-play';
+      btn.dataset.pair = String(pairIndex);
+      btn.setAttribute('aria-label', 'No sentence audio available');
+      btn.dataset.ready = 'false';
+      btn.disabled = true;
+      return btn;
+    }
+
+    function makeRowButton(pairIndex) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'translation-toggle';
+      btn.textContent = '';
+      btn.setAttribute('aria-label', 'Show sentence translation');
+      btn.dataset.translationFor = `sentence-translation-${pairIndex}`;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-controls', `sentence-translation-${pairIndex}`);
+      return btn;
+    }
+
+    function render() {
+      sentences.forEach((pair, index) => {
+        const row = document.createElement('article');
+        row.className = 'pair';
+
+        const ru = makeSentence(pair.ru, 'ru', index);
+        const en = makeTranslationPanel(index, pair.en);
+        const showBtn = makeRowButton(index);
+        const playBtn = makePlayButton(index);
+        pair.playButton = playBtn;
+        const header = document.createElement('div');
+        header.className = 'pair-header';
+        header.appendChild(ru);
+        const controls = document.createElement('div');
+        controls.className = 'row-controls';
+        controls.appendChild(playBtn);
+        controls.appendChild(showBtn);
+        header.appendChild(controls);
+        row.appendChild(header);
+        row.appendChild(en);
+        pairsRoot.appendChild(row);
+      });
+    }
+
+    function toggleSentence(button, panel) {
+      if (!panel || !button) {
+        return;
+      }
+      const isOpen = button.getAttribute('aria-expanded') === 'true';
+      const next = !isOpen;
+      button.setAttribute('aria-expanded', String(next));
+      button.setAttribute('aria-label', next ? 'Hide sentence translation' : 'Show sentence translation');
+      panel.classList.toggle('open', !isOpen);
+      hidePopup();
+    }
+
+    function showPopup(wordEl) {
+      const text = wordEl.dataset.translation || 'No direct word translation';
+
+      popup.textContent = '';
+
+      const source = document.createElement('span');
+      source.className = 'src';
+      source.textContent = wordEl.textContent;
+      const arrow = document.createElement('span');
+      arrow.className = 'arrow';
+      arrow.textContent = '→';
+      const target = document.createElement('span');
+      target.className = 'dst';
+      target.textContent = text;
+
+      popup.appendChild(source);
+      popup.appendChild(arrow);
+      popup.appendChild(target);
+
+      const rect = wordEl.getBoundingClientRect();
+      popup.classList.add('show');
+      popup.style.left = '-9999px';
+      popup.style.top = '-9999px';
+
+      const popupRect = popup.getBoundingClientRect();
+      const left = Math.min(
+        Math.max(8, rect.left + (rect.width / 2) - (popupRect.width / 2)),
+        window.innerWidth - popupRect.width - 8
+      );
+      let top = rect.top - popupRect.height - 12;
+      if (top < 8) {
+        top = rect.bottom + 8;
+      }
+
+      popup.style.left = `${left}px`;
+      popup.style.top = `${top}px`;
+      popup.style.visibility = 'visible';
+    }
+
+    function hidePopup() {
+      popup.classList.remove('show');
+      popup.style.visibility = 'hidden';
+      popup.style.left = '-9999px';
+      popup.style.top = '-9999px';
+      if (activeWord) {
+        activeWord.classList.remove('active');
+        activeWord = null;
+      }
+    }
+
+    pairsRoot.addEventListener('click', (event) => {
+      const playButton = event.target.closest('.sentence-play');
+      if (playButton) {
+        const pairIndex = Number(playButton.dataset.pair);
+        if (!Number.isNaN(pairIndex)) {
+          playSentenceAudio(pairIndex, playButton);
+        }
+        return;
+      }
+
+      const toggle = event.target.closest('.translation-toggle');
+      if (toggle) {
+        const panel = document.getElementById(toggle.dataset.translationFor);
+        toggleSentence(toggle, panel);
+        return;
+      }
+
+      const word = event.target.closest('.word');
+      if (!word) {
+        hidePopup();
+        return;
+      }
+
+      if (activeWord === word) {
+        hidePopup();
+        return;
+      }
+
+      if (activeWord) {
+        activeWord.classList.remove('active');
+      }
+      activeWord = word;
+      word.classList.add('active');
+      showPopup(word);
+    });
+
+    pairsRoot.addEventListener('keydown', (event) => {
+      if ((event.key === 'Enter' || event.key === ' ') && event.target.classList?.contains('word')) {
+        event.preventDefault();
+        event.target.click();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.word') && !popup.contains(event.target)) {
+        hidePopup();
+      }
+    });
+
+    window.addEventListener('scroll', hidePopup, true);
+    window.addEventListener('resize', hidePopup, true);
+
+    render();
+    loadLocalSentenceAudioFiles();
+  </script>
+</body>
+</html>
